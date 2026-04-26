@@ -1,4 +1,4 @@
-const ffmpeg = require('fluent-ffmpeg');
+const ffmpeg = require('@ts-ffmpeg/fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs').promises;
 const { app } = require('electron');
