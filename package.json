@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "onnxruntime-web": "^1.20.0",
-    "@huggingface/transformers": "^3.0.0",
     "@ts-ffmpeg/fluent-ffmpeg": "^2.2.6",
     "axios": "^1.7.0",
     "electron-store": "^8.2.0",

@@ -1,8 +1,10 @@
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
 const axios = require('axios');
 const { app } = require('electron');
 
+// Model registry - standardized file order for all models
 const MODELS = {
   'parakeet-ctc-0.6b': {
     repo: 'istupakov/parakeet-ctc-0.6b-onnx',
@@ -18,11 +20,6 @@ const MODELS = {
     repo: 'onnx-community/parakeet-ctc-1.1b-ONNX',
     files: ['model.onnx', 'config.json', 'tokenizer.json'],
     size: '~1.1GB'
-  },
-  'cohere-transcribe-03-2026': {
-    repo: 'onnx-community/cohere-transcribe-03-2026-ONNX',
-    files: ['model.onnx', 'tokenizer.json', 'config.json'],
-    size: '~2GB (INT4 quantized)'
   }
 };
 
@@ -33,6 +30,24 @@ class ModelManager {
 
   async ensureModelsDir() {
     await fs.mkdir(this.modelsDir, { recursive: true });
+  }
+
+  async verifyFile(filePath) {
+    try {
+      const stats = await fs.stat(filePath);
+      // Basic verification: file exists and has content
+      if (stats.size === 0) {
+        throw new Error('File is empty');
+      }
+      // Read first few bytes to verify file is readable
+      const fd = await fs.open(filePath, 'r');
+      const buffer = Buffer.alloc(4);
+      await fd.read(buffer, 0, 4, 0);
+      await fd.close();
+      return { valid: true, size: stats.size };
+    } catch (error) {
+      return { valid: false, error: error.message };
+    }
   }
 
   async downloadModel(modelKey, onProgress) {
@@ -48,11 +63,15 @@ class ModelManager {
       const url = `https://huggingface.co/${model.repo}/resolve/main/${file}`;
       const dest = path.join(modelDir, file);
       
-      // Check if already downloaded
+      // Check if already downloaded and verified
       try { 
-        await fs.access(dest); 
-        results.push({ file, status: 'exists' }); 
-        continue; 
+        const verification = await this.verifyFile(dest);
+        if (verification.valid) {
+          results.push({ file, status: 'exists', verified: true, size: verification.size }); 
+          continue; 
+        }
+        // File exists but invalid, delete and re-download
+        await fs.unlink(dest);
       } catch {}
 
       // Download with progress and retry logic
@@ -90,7 +109,13 @@ class ModelManager {
             writer.on('error', reject);
           });
           
-          results.push({ file, status: 'downloaded' });
+          // Verify the downloaded file
+          const verification = await this.verifyFile(dest);
+          if (!verification.valid) {
+            throw new Error(`Downloaded file verification failed for ${file}: ${verification.error}`);
+          }
+          
+          results.push({ file, status: 'downloaded', verified: true, size: verification.size });
           break; // Success, exit retry loop
         } catch (error) {
           lastError = error;

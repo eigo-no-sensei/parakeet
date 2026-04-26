@@ -41,6 +41,13 @@ ipcMain.handle('list-models', async () => {
   return await modelManager.listModels();
 });
 
+ipcMain.handle('get-model-path', async (event, modelKey) => {
+  const model = MODELS[modelKey];
+  if (!model) throw new Error(`Unknown model: ${modelKey}`);
+  const modelPath = path.join(modelManager.modelsDir, modelKey, 'model.onnx');
+  return modelPath;
+});
+
 ipcMain.handle('cobalt-fetch', async (event, youtubeUrl) => {
   return await cobalt.fetchAudio(youtubeUrl);
 });

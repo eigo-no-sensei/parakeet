@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Model management
   downloadModel: (modelName) => ipcRenderer.invoke('download-model', modelName),
   listModels: () => ipcRenderer.invoke('list-models'),
+  getModelPath: (modelKey) => ipcRenderer.invoke('get-model-path', modelKey),
   onDownloadProgress: (callback) => {
     ipcRenderer.on('download-progress', (event, progress) => callback(progress));
   },
