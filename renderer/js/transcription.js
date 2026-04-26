@@ -9,6 +9,8 @@ export class TranscriptionEngine {
   }
 
   async initialize(modelName, options = {}) {
+    console.log('[TranscriptionEngine] Initializing model:', modelName);
+    
     // WebGPU execution provider setup
     const sessionOptions = {
       executionProviders: ['webgpu'],
@@ -18,16 +20,21 @@ export class TranscriptionEngine {
     };
 
     const modelPath = `models/${modelName}/model.onnx`;
+    console.log('[TranscriptionEngine] Model path:', modelPath);
+    console.log('[TranscriptionEngine] Execution providers:', sessionOptions.executionProviders);
     
     try {
+      console.log('[TranscriptionEngine] Creating WebGPU session...');
       const session = await ort.InferenceSession.create(modelPath, sessionOptions);
       this.sessions.set(modelName, session);
       this.currentModel = modelName;
+      console.log('[TranscriptionEngine] WebGPU session created successfully');
       return { success: true, model: modelName };
     } catch (error) {
-      console.warn('WebGPU failed, falling back to WASM:', error);
+      console.warn('WebGPU failed, falling back to WASM:', error.message);
       // Fallback to CPU/WASM
       const fallbackOptions = { executionProviders: ['wasm'] };
+      console.log('[TranscriptionEngine] Creating WASM session...');
       const session = await ort.InferenceSession.create(modelPath, fallbackOptions);
       this.sessions.set(modelName, session);
       return { success: true, model: modelName, fallback: true };

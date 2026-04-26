@@ -127,23 +127,30 @@ class App {
 
     try {
       // Check if model exists locally first
+      this.progressText.textContent = 'Checking for model...';
       const models = await window.electronAPI.listModels();
       const modelInfo = models.find(m => m.key === modelName);
       
       if (!modelInfo?.installed) {
-        this.progressText.textContent = 'Downloading model...';
-        await window.electronAPI.downloadModel(modelName);
+        this.progressText.textContent = `⬇️ Downloading model (${modelInfo.size})...`;
+        const result = await window.electronAPI.downloadModel(modelName);
+        this.progressText.textContent = '✓ Model downloaded';
+      } else {
+        this.progressText.textContent = '✓ Model found locally';
       }
       
       // Initialize in renderer
+      this.progressText.textContent = '⚙️ Initializing model...';
       await this.engine.initialize(modelName);
       
       this.modelStatus.textContent = '✓ Model loaded';
       this.modelStatus.className = 'status success';
+      this.progressText.textContent = 'Ready';
       this.transcribeBtn.disabled = false;
     } catch (error) {
       this.modelStatus.textContent = '✗ Load failed';
       this.modelStatus.className = 'status error';
+      this.progressText.textContent = 'Error: ' + error.message;
       console.error('Model load error:', error);
     } finally {
       this.loadModelBtn.disabled = false;
