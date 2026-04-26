@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>🎙️ Transcribe Desktop</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Model Selection -->
+    <section class="model-selector">
+      <h3>Transcription Model</h3>
+      <select id="modelSelect">
+        <option value="parakeet-ctc-0.6b">Parakeet CTC 0.6B (English, Fast)</option>
+        <option value="parakeet-tdt-0.6b-v3">Parakeet TDT 0.6B v3 (25 Languages)</option>
+        <option value="parakeet-ctc-1.1b">Parakeet CTC 1.1B (English, Accurate)</option>
+        <option value="cohere-transcribe-03-2026">Cohere Transcribe (SOTA, 14 Languages)</option>
+      </select>
+      <button id="loadModelBtn">Load Model</button>
+      <span id="modelStatus" class="status"></span>
+    </section>
+
+    <!-- Input Section -->
+    <section class="input-section">
+      <div class="input-tabs">
+        <button class="tab active" data-tab="file">📁 Local File</button>
+        <button class="tab" data-tab="youtube">🎬 YouTube URL</button>
+        <button class="tab" data-tab="record">🎤 Record Audio</button>
+      </div>
+      
+      <div id="fileInput" class="input-panel active">
+        <input type="file" id="audioFile" accept="audio/*,video/*">
+        <p class="hint">Supports: MP3, WAV, M4A, MP4, WebM, MKV</p>
+      </div>
+      
+      <div id="youtubeInput" class="input-panel">
+        <input type="url" id="youtubeUrl" placeholder="https://youtube.com/watch?v=...">
+        <button id="fetchYouTubeBtn">Fetch Audio</button>
+      </div>
+      
+      <div id="recordInput" class="input-panel">
+        <button id="recordBtn">Start Recording</button>
+        <button id="stopRecordBtn" disabled>Stop & Transcribe</button>
+        <div id="recordingTimer">00:00</div>
+      </div>
+    </section>
+
+    <!-- Transcription Controls -->
+    <section class="controls">
+      <button id="transcribeBtn" disabled>▶️ Transcribe</button>
+      <button id="cancelBtn" disabled>⏹ Cancel</button>
+      <div class="progress-bar">
+        <div id="progressFill"></div>
+      </div>
+      <span id="progressText">Ready</span>
+    </section>
+
+    <!-- Results -->
+    <section class="results">
+      <div class="transcription-output">
+        <textarea id="transcriptionText" readonly placeholder="Transcription will appear here..."></textarea>
+        
+        <div class="action-buttons">
+          <button id="copyBtn">📋 Copy</button>
+          <button id="exportTxtBtn">💾 Export .txt</button>
+          <button id="exportSrtBtn">📄 Export .srt</button>
+          <button id="exportJsonBtn">📦 Export .json</button>
+        </div>
+      </div>
+
+      <!-- Stats Panel -->
+      <div class="stats-panel">
+        <h4>📊 Transcription Stats</h4>
+        <div class="stats-grid">
+          <div class="stat"><span class="label">Duration:</span><span id="statDuration">-</span></div>
+          <div class="stat"><span class="label">Words:</span><span id="statWords">-</span></div>
+          <div class="stat"><span class="label">WPM:</span><span id="statWpm">-</span></div>
+          <div class="stat"><span class="label">Confidence:</span><span id="statConfidence">-</span></div>
+          <div class="stat"><span class="label">Inference Time:</span><span id="statInference">-</span></div>
+          <div class="stat"><span class="label">Model:</span><span id="statModel">-</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
