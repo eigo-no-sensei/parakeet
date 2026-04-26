@@ -18,11 +18,14 @@ export class TranscriptionEngine {
       ...options
     };
 
+    // Use custom protocol path: models://parakeet-ctc-0.6b/model.onnx
+    const modelUrl = `models://${modelKey}/model.onnx`;
+    console.log('[TranscriptionEngine] Model URL:', modelUrl);
     console.log('[TranscriptionEngine] Execution providers:', sessionOptions.executionProviders);
     
     try {
       console.log('[TranscriptionEngine] Creating WebGPU session...');
-      const session = await ort.InferenceSession.create(modelKey, sessionOptions);
+      const session = await ort.InferenceSession.create(modelUrl, sessionOptions);
       this.sessions.set(modelKey, session);
       this.currentModel = modelKey;
       console.log('[TranscriptionEngine] WebGPU session created successfully');
@@ -32,7 +35,7 @@ export class TranscriptionEngine {
       // Fallback to CPU/WASM
       const fallbackOptions = { executionProviders: ['wasm'] };
       console.log('[TranscriptionEngine] Creating WASM session...');
-      const session = await ort.InferenceSession.create(modelKey, fallbackOptions);
+      const session = await ort.InferenceSession.create(modelUrl, fallbackOptions);
       this.sessions.set(modelKey, session);
       return { success: true, model: modelKey, fallback: true };
     }
