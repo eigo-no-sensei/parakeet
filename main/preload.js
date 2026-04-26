@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Model management
   downloadModel: (modelName) => ipcRenderer.invoke('download-model', modelName),
   listModels: () => ipcRenderer.invoke('list-models'),
+  onDownloadProgress: (callback) => {
+    ipcRenderer.on('download-progress', (event, progress) => callback(progress));
+  },
   
   // Transcription
   transcribe: (audioBuffer, config) => ipcRenderer.invoke('transcribe', audioBuffer, config),
