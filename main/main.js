@@ -1,16 +1,26 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const ModelManager = require('./services/model-manager');
 const AudioExtractor = require('./services/ffmpeg');
 const CobaltService = require('./services/cobalt');
 
-// Enable WebGPU before app ready
-app.commandLine.appendSwitch('enable-unsafe-webgpu');
-app.commandLine.appendSwitch('enable-features', 'Vulkan');
-
+// Register protocol to serve model files from userData
+// Must be done before app is ready
 const modelManager = new ModelManager();
 const audioExtractor = new AudioExtractor();
 const cobalt = new CobaltService();
+
+app.commandLine.appendSwitch('enable-unsafe-webgpu');
+app.commandLine.appendSwitch('enable-features', 'Vulkan');
+
+app.whenReady().then(() => {
+  protocol.registerFileProtocol('models', (request, callback) => {
+    const urlPath = request.url.replace('models://', '');
+    const modelPath = path.join(modelManager.modelsDir, urlPath);
+    callback({ path: modelPath });
+  });
+});
 
 let mainWindow;
 
