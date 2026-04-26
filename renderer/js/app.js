@@ -133,6 +133,18 @@ class App {
       
       if (!modelInfo?.installed) {
         this.progressText.textContent = `⬇️ Downloading model (${modelInfo.size})...`;
+        
+        // Set up progress listener
+        let lastProgressUpdate = Date.now();
+        window.electronAPI.onDownloadProgress((progress) => {
+          const now = Date.now();
+          // Throttle updates to avoid UI flicker (max 10 updates per second)
+          if (now - lastProgressUpdate > 100) {
+            lastProgressUpdate = now;
+            this.progressText.textContent = `⬇️ ${progress.file}: ${progress.percent}%`;
+          }
+        });
+        
         const result = await window.electronAPI.downloadModel(modelName);
         this.progressText.textContent = '✓ Model downloaded';
       } else {

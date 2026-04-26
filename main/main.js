@@ -31,7 +31,10 @@ function createWindow() {
 
 // IPC Handlers
 ipcMain.handle('download-model', async (event, modelName) => {
-  return await modelManager.downloadModel(modelName);
+  return await modelManager.downloadModel(modelName, (progress) => {
+    // Send progress updates to renderer
+    mainWindow.webContents.send('download-progress', progress);
+  });
 });
 
 ipcMain.handle('list-models', async () => {
