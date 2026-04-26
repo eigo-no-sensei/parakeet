@@ -1,5 +1,5 @@
 {
-  "name": "transcribe-desktop",
+  "name": "winpara",
   "version": "1.0.0",
   "description": "WebGPU-powered speech transcription with Parakeet & Cohere models",
   "main": "main/main.js",
