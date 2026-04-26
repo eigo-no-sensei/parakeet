@@ -163,9 +163,12 @@ class App {
         this.progressFill.style.width = '100%';
       }
       
-      // Initialize in renderer
+      // Get absolute model path
+      const modelPath = await window.electronAPI.getModelPath(modelName);
+      
+      // Initialize in renderer with absolute path
       this.progressText.textContent = '⚙️ Initializing model...';
-      await this.engine.initialize(modelName);
+      await this.engine.initialize(modelPath);
       
       this.modelStatus.textContent = '✓ Model loaded';
       this.modelStatus.className = 'status success';
@@ -294,21 +297,7 @@ class App {
     const modelName = this.modelSelect.value;
 
     try {
-      let result;
-      
-      // Use Cohere pipeline for cohere-transcribe model
-      if (modelName === 'cohere-transcribe-03-2026') {
-        if (!this.engine.transcriber) {
-          await this.engine.loadCohereTranscribe();
-        }
-        // Create blob URL for transcription
-        const audioBlob = new Blob([this.currentAudio], { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        result = await this.engine.transcribeWithCohere(audioUrl);
-        URL.revokeObjectURL(audioUrl);
-      } else {
-        result = await this.engine.transcribe(this.currentAudio, { model: modelName });
-      }
+      const result = await this.engine.transcribe(this.currentAudio, { model: modelName });
 
       const inferenceTime = performance.now() - startTime;
       
