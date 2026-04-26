@@ -11,10 +11,12 @@ class App {
     this.audioChunks = [];
     this.recordingStartTime = null;
     this.timerInterval = null;
+    this.isDownloading = false;
     
     this.initElements();
     this.bindEvents();
     this.checkWebGPUSupport();
+    this.setupDownloadProgressListener();
   }
 
   initElements() {
@@ -83,6 +85,21 @@ class App {
     this.exportJsonBtn.addEventListener('click', () => this.exportJson());
   }
 
+  setupDownloadProgressListener() {
+    this.lastProgressUpdate = 0;
+    window.electronAPI.onDownloadProgress((progress) => {
+      if (!this.isDownloading) return;
+      
+      const now = Date.now();
+      // Throttle updates to avoid UI flicker (max 10 updates per second)
+      if (now - this.lastProgressUpdate > 100) {
+        this.lastProgressUpdate = now;
+        this.progressText.textContent = `⬇️ ${progress.file}: ${progress.percent}%`;
+        this.progressFill.style.width = `${progress.percent}%`;
+      }
+    });
+  }
+
   async checkWebGPUSupport() {
     if (!navigator.gpu) {
       this.modelStatus.textContent = '⚠️ WebGPU not available';
@@ -128,27 +145,22 @@ class App {
     try {
       // Check if model exists locally first
       this.progressText.textContent = 'Checking for model...';
+      this.progressFill.style.width = '0%';
       const models = await window.electronAPI.listModels();
       const modelInfo = models.find(m => m.key === modelName);
       
       if (!modelInfo?.installed) {
+        this.isDownloading = true;
+        this.lastProgressUpdate = Date.now();
         this.progressText.textContent = `⬇️ Downloading model (${modelInfo.size})...`;
         
-        // Set up progress listener
-        let lastProgressUpdate = Date.now();
-        window.electronAPI.onDownloadProgress((progress) => {
-          const now = Date.now();
-          // Throttle updates to avoid UI flicker (max 10 updates per second)
-          if (now - lastProgressUpdate > 100) {
-            lastProgressUpdate = now;
-            this.progressText.textContent = `⬇️ ${progress.file}: ${progress.percent}%`;
-          }
-        });
-        
         const result = await window.electronAPI.downloadModel(modelName);
+        this.isDownloading = false;
         this.progressText.textContent = '✓ Model downloaded';
+        this.progressFill.style.width = '100%';
       } else {
         this.progressText.textContent = '✓ Model found locally';
+        this.progressFill.style.width = '100%';
       }
       
       // Initialize in renderer
@@ -160,6 +172,7 @@ class App {
       this.progressText.textContent = 'Ready';
       this.transcribeBtn.disabled = false;
     } catch (error) {
+      this.isDownloading = false;
       this.modelStatus.textContent = '✗ Load failed';
       this.modelStatus.className = 'status error';
       this.progressText.textContent = 'Error: ' + error.message;
