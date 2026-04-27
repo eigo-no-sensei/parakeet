@@ -7,13 +7,11 @@ const CobaltService = require('./services/cobalt');
 // Enable WebGPU before app ready
 app.commandLine.appendSwitch('enable-unsafe-webgpu');
 
-// Only enable Vulkan if not running on Wayland (Wayland + Vulkan causes issues)
-if (process.env.XDG_SESSION_TYPE !== 'wayland' && !process.env.WAYLAND_DISPLAY) {
-  app.commandLine.appendSwitch('enable-features', 'Vulkan');
-} else {
-  // On Wayland, use ANGLE/EGL instead of Vulkan
-  app.commandLine.appendSwitch('use-angle', 'egl');
-}
+// Force disable Vulkan to avoid Wayland compatibility issues
+// Use ANGLE/EGL for GPU acceleration instead and force X11 platform
+app.commandLine.appendSwitch('disable-features', 'Vulkan');
+app.commandLine.appendSwitch('use-angle', 'egl');
+app.commandLine.appendSwitch('ozone-platform', 'x11');
 
 const modelManager = new ModelManager();
 const audioExtractor = new AudioExtractor();
