@@ -5,7 +5,11 @@ node_modules/
 # Build artifacts
 dist/
 build/
-*.js.map
+target/
+
+# Logs and temp files
+*.log
+*.tmp
 
 # Environment
 .env
@@ -16,15 +20,41 @@ build/
 .vscode/
 .idea/
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# Python (if applicable)
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
+
+# Compiled files
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+
+# Archives
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Original rules preserved
+*.log
 ```
